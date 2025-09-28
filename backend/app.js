@@ -13,20 +13,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      /^https?:\/\/.*\.render\.com$/
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 200
+    origin: ['http://localhost:5173', /\.onrender\.com$/],
   })
 );
 
-// Handle preflight requests
-app.options('*', cors());
-
 app.use('/api/expenses', expensesRouter);
+
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 module.exports = app;
