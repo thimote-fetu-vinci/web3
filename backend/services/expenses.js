@@ -16,10 +16,36 @@ async function addExpense(expense) {
   });
 }
 
-function resetExpenses() {
-  const initData = fs.readFileSync(EXPENSES_INIT_FILE_PATH, 'utf8');
-  fs.writeFileSync(EXPENSES_FILE_PATH, initData);
-  return JSON.parse(initData);
+async function resetExpenses() {
+  try {
+    // Delete all existing expenses from the database
+    await prisma.expense.deleteMany({});
+    
+    // Read initial data
+    const initData = fs.readFileSync(EXPENSES_INIT_FILE_PATH, 'utf8');
+    const expenses = JSON.parse(initData);
+    
+    // Insert initial data into the database (without IDs, let Prisma auto-generate them)
+    const createdExpenses = await prisma.expense.createMany({
+      data: expenses.map(expense => ({
+        date: new Date(expense.date).toISOString(),
+        description: expense.description,
+        payer: expense.payer,
+        amount: parseFloat(expense.amount)
+      }))
+    });
+    
+    // Get all expenses to return (createMany doesn't return the created records)
+    const allExpenses = await prisma.expense.findMany();
+    
+    // Also update the JSON file for consistency
+    fs.writeFileSync(EXPENSES_FILE_PATH, initData);
+    
+    return allExpenses;
+  } catch (error) {
+    console.error('Error resetting expenses:', error);
+    throw error;
+  }
 }
 
 module.exports = {

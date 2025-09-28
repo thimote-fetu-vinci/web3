@@ -29,9 +29,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.post('/reset', (req, res) => {
+router.post('/reset', async (req, res) => {
   try {
-    const resetData = expensesService.resetExpenses();
+    const resetData = await expensesService.resetExpenses();
     res.json({
       message: 'Expenses reset successfully',
       data: resetData,
