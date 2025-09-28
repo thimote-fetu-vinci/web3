@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon npm start",
-    "start": "node ./bin/www"
+    "start": "prisma generate && node ./bin/www"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -12,9 +12,7 @@
     "cors": "^2.8.5",
     "debug": "~2.6.9",
     "express": "~4.16.1",
-    "morgan": "~1.9.1"
-  },
-  "devDependencies": {
+    "morgan": "~1.9.1",
     "prisma": "^6.16.2"
   }
 }
