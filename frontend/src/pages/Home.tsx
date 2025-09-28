@@ -92,7 +92,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Expense Sharing App</h1>
+      <h1>Expenso</h1>
 
       {error && <div>Error: {error}</div>}
 
