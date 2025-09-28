@@ -41,8 +41,12 @@ export default function Home() {
     try {
       setLoading(true);
       const data = await sendApiRequestandHandleError("GET", "expenses");
-      setExpenses(data);
-      setError(null);
+      if (data && Array.isArray(data)) {
+        setExpenses(data);
+        setError(null);
+      } else {
+        setExpenses([]);
+      }
     } finally {
       setLoading(false);
     }
