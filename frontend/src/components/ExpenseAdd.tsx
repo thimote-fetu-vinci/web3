@@ -1,63 +1,111 @@
 import type { ExpenseInput } from '../types/Expense';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 interface ExpenseAddProps {
   addExpense: (expense: ExpenseInput) => void;
 }
 
-const expenseSchema = z.object({
-  description: z
-    .string()
-    .max(200, 'Description cannot exceed 200 characters')
-    .min(3, 'Description must be at least 3 characters long')
-    .or(z.literal('')),
-  payer: z.enum(['Alice', 'Bob'], {
-    error: 'Payer must be either Alice or Bob',
-  }),
-  amount: z.coerce.number<number>().gt(0, 'Amount must be a positive number'),
-});
-
-type FormData = z.infer<typeof expenseSchema>;
+interface FormData {
+  description: string;
+  payer: string;
+  amount: string;
+}
 
 export default function ExpenseAdd({ addExpense }: ExpenseAddProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(expenseSchema),
+  const form = useForm<FormData>({
+    defaultValues: {
+      description: '',
+      payer: 'Alice',
+      amount: '',
+    },
   });
 
   const onSubmit = ({ description, payer, amount }: FormData) => {
     addExpense({
       description,
       payer,
-      amount,
+      amount: parseFloat(amount),
       date: new Date().toISOString(),
     });
+    form.reset();
   };
 
-  const isSubmitDisabled = isSubmitting;
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-      <input type="text" placeholder="Description" {...register('description')} />
-      {errors.description && <span> {errors.description.message}</span>}
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm border">
+      <h3 className="text-lg font-semibold mb-4">Add New Expense</h3>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="description"
+              rules={{ required: 'Description is required' }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <select {...register('payer')}>
-        <option value="Alice">Alice</option>
-        <option value="Bob">Bob</option>
-      </select>
-      {errors.payer && <span>{errors.payer.message}</span>}
+            <FormField
+              control={form.control}
+              name="payer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payer</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a payer" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Alice">Alice</SelectItem>
+                      <SelectItem value="Bob">Bob</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <input type="number" {...register('amount')} placeholder="Enter amount" step={0.01} />
-      {errors.amount && <span>{errors.amount.message}</span>}
+            <FormField
+              control={form.control}
+              name="amount"
+              rules={{
+                required: 'Amount is required',
+                pattern: {
+                  value: /^\d+(\.\d{1,2})?$/,
+                  message: 'Please enter a valid amount',
+                },
+              }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" min={0} step={0.01} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-      <button type="submit" disabled={isSubmitDisabled}>
-        {isSubmitting ? 'Adding...' : 'Add'}
-      </button>
-    </form>
+          <div className="flex justify-end">
+            <Button type="submit" className="bg-green-800 hover:bg-green-700">
+              Add Expense
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }
