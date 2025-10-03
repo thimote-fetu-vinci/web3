@@ -16,7 +16,7 @@ const amountLowestAlgo: SortingAlgo = (a, b) => a.amount - b.amount;
 export default function ExpenseSorter({ setSortingAlgo }: ExpenseSorterProps) {
   const [sortBy, setSortBy] = useState<SortOption>('date-newest');
 
-  const handleSortChange = (event: any) => {
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortOption = event.target.value as SortOption;
     setSortBy(newSortOption);
 
@@ -37,9 +37,9 @@ export default function ExpenseSorter({ setSortingAlgo }: ExpenseSorterProps) {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div>Sort by:</div>
-      <select value={sortBy} onChange={handleSortChange}>
+    <div>
+      <label htmlFor="sort-select">Sort by:</label>
+      <select id="sort-select" value={sortBy} onChange={handleSortChange}>
         <option value="date-newest">Date (Newest First)</option>
         <option value="date-oldest">Date (Oldest First)</option>
         <option value="amount-highest">Amount (Highest First)</option>

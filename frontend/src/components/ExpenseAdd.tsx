@@ -1,103 +1,63 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { Expense, ExpenseInput } from "../types/Expense";
-import {
-  expenseFormSchema,
-  type ExpenseFormData,
-} from "../types/ExpenseValidation";
+import type { ExpenseInput } from '../types/Expense';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 interface ExpenseAddProps {
-  addExpense: (expense: Expense) => void;
+  addExpense: (expense: ExpenseInput) => void;
 }
+
+const expenseSchema = z.object({
+  description: z
+    .string()
+    .max(200, 'Description cannot exceed 200 characters')
+    .min(3, 'Description must be at least 3 characters long')
+    .or(z.literal('')),
+  payer: z.enum(['Alice', 'Bob'], {
+    error: 'Payer must be either Alice or Bob',
+  }),
+  amount: z.coerce.number<number>().gt(0, 'Amount must be a positive number'),
+});
+
+type FormData = z.infer<typeof expenseSchema>;
 
 export default function ExpenseAdd({ addExpense }: ExpenseAddProps) {
   const {
+    register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
-  } = useForm<ExpenseFormData>({
-    resolver: zodResolver(expenseFormSchema),
-    defaultValues: {
-      payer: "Bob" as const,
-      date: new Date().toISOString().split("T")[0],
-      description: "",
-      amount: 0,
-    },
+  } = useForm<FormData>({
+    resolver: zodResolver(expenseSchema),
   });
 
-  const onSubmit = async (data: ExpenseFormData) => {
-    const dateTime = new Date(data.date).toISOString();
-
-    const formData: ExpenseInput = {
-      payer: data.payer,
-      date: dateTime,
-      description: data.description || "",
-      amount: data.amount,
-    };
-
-    console.log("Form content:", formData);
-
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${apiUrl}/api/expenses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const newExpense = await response.json();
-      addExpense(newExpense);
-
-      // Reset form
-      reset({
-        payer: "Bob" as const,
-        date: new Date(Date.now()).toISOString().split("T")[0],
-        description: "",
-        amount: 0,
-      });
-    } catch (error) {
-      console.error("Error creating expense:", error);
-      alert("Failed to create expense. Please try again.");
-    }
+  const onSubmit = ({ description, payer, amount }: FormData) => {
+    addExpense({
+      description,
+      payer,
+      amount,
+      date: new Date().toISOString(),
+    });
   };
 
+  const isSubmitDisabled = isSubmitting;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", maxWidth: "500px", margin: "auto" }}>
-        <div>
-          <textarea name="description" rows={1} />
-          {errors.description && <div>{errors.description.message}</div>}
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <input type="text" placeholder="Description" {...register('description')} />
+      {errors.description && <span> {errors.description.message}</span>}
 
-        <div>
-          <select name="payer">
-            <option value="Bob">Bob</option>
-            <option value="Alice">Alice</option>
-          </select>
-          {errors.payer && <div>{errors.payer.message}</div>}
-        </div>
+      <select {...register('payer')}>
+        <option value="Alice">Alice</option>
+        <option value="Bob">Bob</option>
+      </select>
+      {errors.payer && <span>{errors.payer.message}</span>}
 
-        <div>
-          <input
-            name="amount"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="0.00"
-          />
-          {errors.amount && <div>{errors.amount.message}</div>}
-        </div>
+      <input type="number" {...register('amount')} placeholder="Enter amount" step={0.01} />
+      {errors.amount && <span>{errors.amount.message}</span>}
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Adding Expense..." : "Add"}
-        </button>
-      </div>
+      <button type="submit" disabled={isSubmitDisabled}>
+        {isSubmitting ? 'Adding...' : 'Add'}
+      </button>
     </form>
   );
 }

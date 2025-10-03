@@ -1,51 +1,38 @@
-const fs = require('fs');
-const path = require('path');
-const { PrismaClient } = require('../generated/prisma');
+const { PrismaClient } = require('../generated/prisma/client');
 
 const prisma = new PrismaClient();
-const EXPENSES_FILE_PATH = path.join(__dirname, '../data/expenses.json');
-const EXPENSES_INIT_FILE_PATH = path.join(__dirname, '../data/expenses.init.json');
 
-async function getAllExpenses() {
-  return await prisma.expense.findMany();
-}
-
-async function addExpense(expense) {
-  return await prisma.expense.create({
-    data: expense
+const queryDatabaseAndDisconnect = (operation) => {
+  return operation().finally(() => {
+    prisma.$disconnect();
   });
+};
+
+function getAllExpenses() {
+  const operation = () => prisma.expense.findMany();
+  const expenses = queryDatabaseAndDisconnect(operation);
+  console.log(expenses);
+  return expenses;
 }
 
-async function resetExpenses() {
-  try {
-    // Delete all existing expenses from the database
+function addExpense(expense) {
+  const operation = () => prisma.expense.create({ data: expense });
+  return queryDatabaseAndDisconnect(operation);
+}
+
+const INITIAL_DATA = [
+  { date: '2025-01-16T00:00:00Z', description: 'Example expense #1 from Alice', payer: 'Alice', amount: 25.5 },
+  { date: '2025-01-15T00:00:00Z', description: 'Example expense #2 from Bob', payer: 'Bob', amount: 35 },
+  { date: '2025-01-15T00:00:00Z', description: 'Example expense #3 from Alice', payer: 'Alice', amount: 2 },
+];
+
+function resetExpenses() {
+  const operation = async () => {
     await prisma.expense.deleteMany({});
-    
-    // Read initial data
-    const initData = fs.readFileSync(EXPENSES_INIT_FILE_PATH, 'utf8');
-    const expenses = JSON.parse(initData);
-    
-    // Insert initial data into the database (without IDs, let Prisma auto-generate them)
-    const createdExpenses = await prisma.expense.createMany({
-      data: expenses.map(expense => ({
-        date: new Date(expense.date).toISOString(),
-        description: expense.description,
-        payer: expense.payer,
-        amount: parseFloat(expense.amount)
-      }))
-    });
-    
-    // Get all expenses to return (createMany doesn't return the created records)
-    const allExpenses = await prisma.expense.findMany();
-    
-    // Also update the JSON file for consistency
-    fs.writeFileSync(EXPENSES_FILE_PATH, initData);
-    
-    return allExpenses;
-  } catch (error) {
-    console.error('Error resetting expenses:', error);
-    throw error;
-  }
+    await prisma.expense.createMany({ data: INITIAL_DATA });
+    return prisma.expense.findMany();
+  };
+  return queryDatabaseAndDisconnect(operation);
 }
 
 module.exports = {

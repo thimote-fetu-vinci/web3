@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 # Test local database
 db-read.js
 db-populate.js
+
+# MacOS system files
+.DS_Store
