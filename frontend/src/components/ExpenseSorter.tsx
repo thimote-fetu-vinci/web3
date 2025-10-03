@@ -37,8 +37,7 @@ export default function ExpenseSorter({ setSortingAlgo }: ExpenseSorterProps) {
   };
 
   return (
-    <div>
-      <span>🔀</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div>Sort by:</div>
       <select value={sortBy} onChange={handleSortChange}>
         <option value="date-newest">Date (Newest First)</option>

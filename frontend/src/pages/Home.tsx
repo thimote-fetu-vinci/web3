@@ -86,8 +86,8 @@ export default function Home() {
         await fetchExpenses();
       }
     } catch (error) {
-      console.error('Error resetting expenses:', error);
-      setError('Failed to reset expenses. Please try again.');
+      console.error("Error resetting expenses:", error);
+      setError("Failed to reset expenses. Please try again.");
       await fetchExpenses();
     } finally {
       setIsResetting(false);
@@ -105,27 +105,45 @@ export default function Home() {
   return (
     <div>
       <header>
-        <h1>Expenso</h1>
-        <p>Track and manage your expenses with ease</p>
+        <h1
+          style={{
+            fontSize: "3rem",
+            fontWeight: "bold",
+            justifyContent: "center",
+            display: "flex",
+          }}
+        >
+          Expenso Sharing App
+        </h1>
       </header>
 
       {error && <div>{error}</div>}
 
       <main>
-        <aside>
+        <div>
           <ExpenseAdd addExpense={handleAddExpense} />
-          <div>
-            <button onClick={handleResetData} disabled={isResetting}>{isResetting ? 'Resetting...' : 'Reset Data'}</button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <button onClick={handleResetData} disabled={isResetting}>
+              {isResetting ? "Resetting..." : "Reset Data"}
+            </button>
           </div>
-        </aside>
+        </div>
 
-        <section>
+        <section
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
           <div>
-            <h2>Expenses</h2>
-            <div>{`${expenses.length} ${expenses.length === 1 ? 'expense' : 'expenses'}`}</div>
+            <h2>{`Expenses (${expenses.length})`}</h2>
           </div>
 
-          {expenses.length > 0 && <ExpenseSorter setSortingAlgo={handleAlgoChange} />}
+          {expenses.length > 0 && (
+            <ExpenseSorter setSortingAlgo={handleAlgoChange} />
+          )}
 
           <div>
             {sortedExpenses.length === 0 ? (
@@ -135,10 +153,9 @@ export default function Home() {
               </div>
             ) : (
               <div>
-                {sortedExpenses.map((expense, index) => (
+                {sortedExpenses.map((expense) => (
                   <div key={expense.id}>
                     <ExpenseItem expense={expense} />
-                    {index < sortedExpenses.length - 1 && <hr />}
                   </div>
                 ))}
               </div>
