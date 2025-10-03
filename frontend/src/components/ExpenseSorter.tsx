@@ -1,15 +1,4 @@
 import { useState } from 'react';
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Typography,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
-import { Sort } from '@mui/icons-material';
 import type { Expense } from '../types/Expense';
 
 type SortOption = 'date-newest' | 'date-oldest' | 'amount-highest' | 'amount-lowest';
@@ -26,8 +15,6 @@ const amountLowestAlgo: SortingAlgo = (a, b) => a.amount - b.amount;
 
 export default function ExpenseSorter({ setSortingAlgo }: ExpenseSorterProps) {
   const [sortBy, setSortBy] = useState<SortOption>('date-newest');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleSortChange = (event: any) => {
     const newSortOption = event.target.value as SortOption;
@@ -50,25 +37,15 @@ export default function ExpenseSorter({ setSortingAlgo }: ExpenseSorterProps) {
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-      <Sort color="action" />
-      <Typography variant="body1" sx={{ minWidth: 'fit-content' }}>
-        Sort by:
-      </Typography>
-      <FormControl size="small" sx={{ minWidth: isMobile ? 200 : 250 }}>
-        <InputLabel id="sort-select-label">Sort Option</InputLabel>
-        <Select
-          labelId="sort-select-label"
-          value={sortBy}
-          label="Sort Option"
-          onChange={handleSortChange}
-        >
-          <MenuItem value="date-newest">Date (Newest First)</MenuItem>
-          <MenuItem value="date-oldest">Date (Oldest First)</MenuItem>
-          <MenuItem value="amount-highest">Amount (Highest First)</MenuItem>
-          <MenuItem value="amount-lowest">Amount (Lowest First)</MenuItem>
-        </Select>
-      </FormControl>
-    </Box>
+    <div>
+      <span>🔀</span>
+      <div>Sort by:</div>
+      <select value={sortBy} onChange={handleSortChange}>
+        <option value="date-newest">Date (Newest First)</option>
+        <option value="date-oldest">Date (Oldest First)</option>
+        <option value="amount-highest">Amount (Highest First)</option>
+        <option value="amount-lowest">Amount (Lowest First)</option>
+      </select>
+    </div>
   );
 }

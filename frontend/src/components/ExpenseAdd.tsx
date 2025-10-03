@@ -1,23 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Typography,
-  Stack,
-  InputAdornment,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
-import { AttachMoney, CalendarToday, Description, Person } from '@mui/icons-material';
 import type { Expense, ExpenseInput } from '../types/Expense';
 import { expenseFormSchema, type ExpenseFormData } from '../types/ExpenseValidation';
 
@@ -26,9 +8,8 @@ interface ExpenseAddProps {
 }
 
 export default function ExpenseAdd({ addExpense }: ExpenseAddProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+  // lightweight mobile check (not actively used here)
+
   const {
     control,
     handleSubmit,
@@ -88,156 +69,73 @@ export default function ExpenseAdd({ addExpense }: ExpenseAddProps) {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Card elevation={3}>
-        <CardHeader
-          title={
-            <Typography variant={isMobile ? 'h6' : 'h5'} component="h2" color="primary">
-              Add New Expense
-            </Typography>
-          }
-          sx={{ pb: 1, pt: 2 }}
-        />
-        <CardContent>
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Stack spacing={2.5}>
-              {/* Payer Field */}
-              <Controller
-                name="payer"
-                control={control}
-                render={({ field }) => (
-                  <FormControl fullWidth error={!!errors.payer}>
-                    <InputLabel id="payer-label">Payer</InputLabel>
-                    <Select
-                      {...field}
-                      labelId="payer-label"
-                      label="Payer"
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <Person />
-                        </InputAdornment>
-                      }
-                    >
-                      <MenuItem value="Bob">Bob</MenuItem>
-                      <MenuItem value="Alice">Alice</MenuItem>
-                    </Select>
-                    {errors.payer && (
-                      <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-                        {errors.payer.message}
-                      </Typography>
-                    )}
-                  </FormControl>
-                )}
-              />
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div>
+        <div>
+          <label>Payer</label>
+          <Controller
+            name="payer"
+            control={control}
+            render={({ field }) => (
+              <select {...field}>
+                <option value="Bob">Bob</option>
+                <option value="Alice">Alice</option>
+              </select>
+            )}
+          />
+          {errors.payer && <div>{errors.payer.message}</div>}
+        </div>
 
-              {/* Date Field */}
-              <Controller
-                name="date"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type="date"
-                    label="Date"
-                    error={!!errors.date}
-                    helperText={errors.date?.message}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarToday />
-                        </InputAdornment>
-                      ),
-                    }}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                )}
-              />
+        <div>
+          <label>Date</label>
+          <Controller
+            name="date"
+            control={control}
+            render={({ field }) => (
+              <input {...field} type="date" />
+            )}
+          />
+          {errors.date && <div>{errors.date.message}</div>}
+        </div>
 
-              {/* Amount Field */}
-              <Controller
-                name="amount"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type="number"
-                    label="Amount"
-                    placeholder="0.00"
-                    error={!!errors.amount}
-                    helperText={errors.amount?.message}
-                    inputProps={{
-                      step: 0.01,
-                      min: 0,
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <AttachMoney />
-                        </InputAdornment>
-                      ),
-                    }}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      field.onChange(isNaN(value) ? 0 : value);
-                    }}
-                  />
-                )}
-              />
-
-              {/* Description Field */}
-              <Controller
-                name="description"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label="Description"
-                    placeholder="Enter expense description (optional, max 200 chars)"
-                    error={!!errors.description}
-                    helperText={errors.description?.message}
-                    multiline
-                    rows={2}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Description />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={isSubmitting}
-                sx={{
-                  mt: 1,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #1976D2 30%, #1DB5DB 90%)',
-                  },
+        <div>
+          <label>Amount</label>
+          <Controller
+            name="amount"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  field.onChange(isNaN(value) ? 0 : value);
                 }}
-              >
-                {isSubmitting ? 'Adding Expense...' : 'Add Expense'}
-              </Button>
-            </Stack>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+              />
+            )}
+          />
+          {errors.amount && <div>{errors.amount.message}</div>}
+        </div>
+
+        <div>
+          <label>Description</label>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <textarea {...field} rows={2} />
+            )}
+          />
+          {errors.description && <div>{errors.description.message}</div>}
+        </div>
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Adding Expense...' : 'Add Expense'}
+        </button>
+      </div>
+    </form>
   );
 }
